@@ -1,0 +1,39 @@
+<group name="active_directory,identity_attacks,">
+
+  <!-- Detect Kerberoasting via RC4 (0x17) TGS Ticket Requests -->
+  <rule id="100201" level="12">
+    <if_group>windows</if_group>
+    <field name="win.system.eventID">^4769$</field>
+    <field name="win.eventdata.ticketEncryptionType">0x17</field>
+    <field name="win.eventdata.serviceName" negate="yes">^krbtgt$|\$$</field>
+    <description>Active Directory: Potential Kerberoasting Attack Detected (RC4 TGS Request for $(win.eventdata.serviceName) by $(win.eventdata.targetUserName))</description>
+    <mitre>
+      <id>T1558.003</id>
+    </mitre>
+  </rule>
+
+  <!-- Detect AS-REP Roasting via Pre-Auth Type 0 + RC4 -->
+  <rule id="100202" level="12">
+    <if_group>windows</if_group>
+    <field name="win.system.eventID">^4768$</field>
+    <field name="win.eventdata.ticketEncryptionType">0x17</field>
+    <field name="win.eventdata.preAuthType">^0$</field>
+    <description>Active Directory: AS-REP Roasting Ticket Request for account $(win.eventdata.targetUserName) (Pre-Auth Disabled)</description>
+    <mitre>
+      <id>T1558.004</id>
+    </mitre>
+  </rule>
+
+  <!-- Detect DCSync Directory Replication by Non-Machine Account -->
+  <rule id="100203" level="14">
+    <if_group>windows</if_group>
+    <field name="win.system.eventID">^4662$</field>
+    <field name="win.eventdata.properties">1131f6aa-9c07-11d1-f79f-00c04fc2dcd2|1131f6ad-9c07-11d1-f79f-00c04fc2dcd2|Replicating Directory Changes</field>
+    <field name="win.eventdata.subjectUserName" negate="yes">\$$</field>
+    <description>CRITICAL: Active Directory DCSync Attack Detected by User $(win.eventdata.subjectUserName)</description>
+    <mitre>
+      <id>T1003.006</id>
+    </mitre>
+  </rule>
+
+</group>
